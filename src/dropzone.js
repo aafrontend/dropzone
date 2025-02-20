@@ -457,15 +457,17 @@ export default class Dropzone extends Emitter {
     } /><input type="submit" value="Upload!"></div>`;
 
     let fields = Dropzone.createElement(fieldsString);
+    let method = this.resolveOption(this.options.method);
+    let url = this.resolveOption(this.options.url);
     if (this.element.tagName !== "FORM") {
       form = Dropzone.createElement(
-        `<form action="${this.options.url}" enctype="multipart/form-data" method="${this.options.method}"></form>`
+        `<form action="${url}" enctype="multipart/form-data" method="${method}"></form>`
       );
       form.appendChild(fields);
     } else {
       // Make sure that the enctype and method attributes are set properly
       this.element.setAttribute("enctype", "multipart/form-data");
-      this.element.setAttribute("method", this.options.method);
+      this.element.setAttribute("method", method);
     }
     return form != null ? form : fields;
   }
