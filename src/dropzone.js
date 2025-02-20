@@ -1660,6 +1660,7 @@ export default class Dropzone extends Emitter {
       );
       return;
     }
+    this._watchXhrSend(xhr, files); // [+]
     if (this.options.binaryBody) {
       if (files[0].upload.chunked) {
         const chunk = this._getChunk(files[0], xhr);
@@ -1713,6 +1714,47 @@ export default class Dropzone extends Emitter {
       (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
     );
   }
+
+  // ----------------------------------- //
+  // [+] Custom functions: coscms.com    //
+  // ----------------------------------- //
+
+  _getBytesSent(files) {
+    if (files[0].upload.chunked) {
+      return files[0].upload.bytesSent;
+    }
+    var bytesSent = 0;
+    for (let file of files) {
+      bytesSent += file.upload.bytesSent;
+    }
+    return bytesSent;
+  }
+
+  _watchXhrSend(xhr, files, timeout) {
+    if(timeout === null) timeout = 2000;
+    if(timeout <= 0) return;
+    var bytesSent = this._getBytesSent(files);
+    var interval = setInterval(() => {
+      var bytesSentNow = this._getBytesSent(files);
+      if (bytesSentNow !== bytesSent) {
+        bytesSent = bytesSentNow;
+        return;
+      }
+      clearInterval(interval);
+      xhr.abort();
+      this._handleUploadError(
+        files,
+        xhr,
+        `Request timedout after ${timeout} seconds`
+      );
+    }, timeout);
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState == 4 || xhr.readyState == 0) {
+        try{clearInterval(interval);}catch(e){}
+      }
+    };
+  }
+
 }
 Dropzone.initClass();
 
