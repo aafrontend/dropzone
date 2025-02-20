@@ -1730,23 +1730,44 @@ export default class Dropzone extends Emitter {
     return bytesSent;
   }
 
+  _getTotalBytes(files,xhr) {
+    if (files[0].upload.chunked) {
+      var chunk = this._getChunk(files[0], xhr);
+      return chunk.file.size;
+    }
+    var totalBytes = 0;
+    for (let file of files) {
+      totalBytes += file.upload.total;
+    }
+    return totalBytes;
+  }
+
   _watchXhrSend(xhr, files, timeout) {
-    if(timeout === null) timeout = 2000;
+    if(timeout === null || timeout === undefined) timeout = 2000;
     if(timeout <= 0) return;
-    var bytesSent = this._getBytesSent(files);
+    var bytesSent = this._getBytesSent(files), totalBytes = this._getTotalBytes(files,xhr);
     var interval = setInterval(() => {
       var bytesSentNow = this._getBytesSent(files);
       if (bytesSentNow !== bytesSent) {
         bytesSent = bytesSentNow;
         return;
       }
+      //console.dir('sent:',bytesSentNow,'lastSent:',bytesSent,'total:',totalBytes);
       clearInterval(interval);
+      if (files[0].upload.chunked) {
+        if (bytesSentNow === totalBytes) return;
+        let chunk = this._getChunk(files[0], xhr);
+        //console.dir('chunk.bytesSent:',chunk.bytesSent,'chunk.total:',chunk.total);
+        if (chunk && chunk.bytesSent === chunk.total) return;
+      } else {
+        if (bytesSentNow > 0) return;
+      }
       xhr.onerror = null;
       xhr.abort();
       this._handleUploadError(files,xhr,`Request timedout after ${timeout} seconds`);
     }, timeout);
     xhr.onreadystatechange = () => {
-      if (xhr.readyState == 4 || xhr.readyState == 0) {
+      if (xhr.readyState == 4) {
         try{clearInterval(interval);}catch(e){}
       }
     };
