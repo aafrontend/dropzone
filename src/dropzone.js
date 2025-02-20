@@ -1741,12 +1741,9 @@ export default class Dropzone extends Emitter {
         return;
       }
       clearInterval(interval);
+      xhr.onerror = null;
       xhr.abort();
-      this._handleUploadError(
-        files,
-        xhr,
-        `Request timedout after ${timeout} seconds`
-      );
+      this._handleUploadError(files,xhr,`Request timedout after ${timeout} seconds`);
     }, timeout);
     xhr.onreadystatechange = () => {
       if (xhr.readyState == 4 || xhr.readyState == 0) {
