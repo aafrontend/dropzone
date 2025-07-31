@@ -1662,7 +1662,9 @@ export default class Dropzone extends Emitter {
       );
       return;
     }
-    if(('watchXHRTimout' in this.options)) this._watchXHRTimeout(xhr, files, this.options.watchXHRTimout); // [+]
+    if ('watchXHRTimout' in this.options) {
+      this._watchXHRTimeout(xhr, files, this.options.watchXHRTimout); // [+]
+    }
     if (this.options.binaryBody) {
       if (files[0].upload.chunked) {
         const chunk = this._getChunk(files[0], xhr);
