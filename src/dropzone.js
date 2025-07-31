@@ -1747,6 +1747,7 @@ export default class Dropzone extends Emitter {
   }
 
   _watchXHRTimeout(xhr, files, timeout) {
+    if(timeout === false) return;
     if(timeout === null || timeout === undefined) timeout = 2000;
     if(timeout <= 0) return;
     var bytesSent = this._getBytesSent(files), totalBytes = this._getTotalBytes(files,xhr);
