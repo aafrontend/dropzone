@@ -1662,7 +1662,7 @@ export default class Dropzone extends Emitter {
       );
       return;
     }
-    this._watchXhrSend(xhr, files); // [+]
+    if(('watchXHRTimout' in this.options)) this._watchXHRTimeout(xhr, files, this.options.watchXHRTimout); // [+]
     if (this.options.binaryBody) {
       if (files[0].upload.chunked) {
         const chunk = this._getChunk(files[0], xhr);
@@ -1744,7 +1744,7 @@ export default class Dropzone extends Emitter {
     return totalBytes;
   }
 
-  _watchXhrSend(xhr, files, timeout) {
+  _watchXHRTimeout(xhr, files, timeout) {
     if(timeout === null || timeout === undefined) timeout = 2000;
     if(timeout <= 0) return;
     var bytesSent = this._getBytesSent(files), totalBytes = this._getTotalBytes(files,xhr);
